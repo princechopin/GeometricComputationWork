@@ -1,0 +1,63 @@
+The code was done in g++11 on Ubuntu 22.04LTS.
+
+FindEar.cpp :  All coding are done here.
+Makefile : just type make, it will build FindEar for you.
+
+To run the code, after make
+
+./FindEar <polygon.csv> files.
+
+I load back the original testcases with the logs to show the results.
+I also added a very small simple test to verify the correctness.
+
+they are 
+
+test.csv
+simple_concave_poly.csv
+concave_poly.csv
+
+README
+
+test.log
+simple_concave_poly.log
+concave_poly.log
+drawpolygon.py
+
+concavepolygon.png # a screen snapshot the the intermediate results for concave_poly.csv
+
+
+
+The decomposed triagles and total areas are output in the end of the prolgram to the console which can 
+be redirected to the log files.
+
+The run time for those several tests are minimum, not measureable for concave_poly.log on a Dell desk top.
+
+time; ./FindEar c*.csv > temp.log; time
+
+real	0m0.000s
+user	0m0.000s
+sys	0m0.000s
+
+real	0m0.000s
+user	0m0.000s
+sys	0m0.000s
+
+
+
+
+And a python plotting program to keep track the progress graphically.
+A small test routine checkLinks() can check the doubly-linked ring of the dnamic polygaon in any stage of the 
+code, which can be used to do some unit tests for the modules.
+
+main class is FindEar, getPolygon() can build the doubly-llinked ring from any give .csv file.
+The main routine is in run().
+
+
+I am eagerly waiting to talk to the teams for the next steps.
+
+Joe.
+
+7-12-2024
+
+
+

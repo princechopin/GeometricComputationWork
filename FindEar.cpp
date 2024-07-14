@@ -35,6 +35,7 @@ struct dpoint_t {
   dpoint_t operator = (const dpoint_t &p) { _x = p._x; _y = p._y; return *this; }
   double distX(const dpoint_t &p) const { return p._x - this->_x; }
   double distY(const dpoint_t &p) const { return p._y - this->_y; }
+  bool operator == (const dpoint_t &p) { return(_x == p._x && _y == p._y); }
   double _x;
   double _y;
 };
@@ -167,7 +168,26 @@ int FindEar::run()
     prev = _polygonIn._ringStart->_prev;
     curr = _polygonIn._ringStart;
     next = _polygonIn._ringStart->_next;
-    // _polygonIn.checkLink();
+    i++;
+
+    if (prev->_pt == curr->_pt) {
+        printf("i: %d Remove identical node: (%g %g)\n", i, curr->_pt._x, curr->_pt._y);
+        _polygonIn._numPoints--;
+        prev->_next = next;
+        next->_prev = prev;
+        delete curr;
+        _polygonIn._ringStart = prev;
+        continue;
+    } else if (next->_pt == curr->_pt) {
+        printf("i: %d Remove identical node: (%g %g)\n", i, curr->_pt._x, curr->_pt._y);
+        _polygonIn._numPoints--;
+        prev->_next = next;
+        next->_prev = prev;
+        delete curr;
+        _polygonIn._ringStart = prev;
+        continue;
+    }
+    _polygonIn.checkLink();
     printf("cutline : (%g %g)(%g %g )(%g %g)\n",
       prev->_pt._x, prev->_pt._y, curr->_pt._x, curr->_pt._y, next->_pt._x, next->_pt._y);
     tryToRemove = false;
@@ -177,7 +197,7 @@ int FindEar::run()
         prev->_next = next;
         next->_prev = prev;
         _polygonIn._ringStart = prev;
-        // _polygonIn.checkLink();
+        _polygonIn.checkLink();
         // Take this solution.
         _triangles.push_back(dtriangle_t(prev->_pt, curr->_pt, next->_pt));
         double tArea = _triangles.back().getArea();
@@ -188,7 +208,6 @@ int FindEar::run()
     } else {
         _polygonIn._ringStart = next;
     }
-    i++;
     cout << "i: " << i << "  currArea : " << currArea  << "\n";
     // Set a limit to avoid possible infinite loop caused by bad data or bad services.
     if (i > limit*30 || currArea == 0.0) break;

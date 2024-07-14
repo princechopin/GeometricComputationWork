@@ -67,12 +67,13 @@ struct dpolygon_t {
   void checkLink();
   double getArea();
   void removeVetex(dpRing_t *vertex) {
+     if (vertex == nullptr) return;
      _numPoints--;
      dpRing_t *prev = vertex->_prev;
-     vertex->_prev->_next = vertex->_next;
-     vertex->_next->_prev = vertex->_prev;
+     prev->_next = vertex->_next;
+     vertex->_next->_prev = prev;
      if (_ringStart == vertex) {
-        _ringStart = (vertex->_prev == _ringStart)?nullptr : vertex->_prev;
+        _ringStart = (prev == _ringStart)?nullptr : prev;
      }
      delete vertex;
   }

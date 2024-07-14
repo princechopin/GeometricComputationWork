@@ -149,10 +149,7 @@ void FindEar::getPolygon(const char *fileName)
   // remove the last point if identical to start.
   // _polygonIn.checkLink();
   if (ringTail != _polygonIn._ringStart && ringTail->_pt == _polygonIn._ringStart->_pt) {
-    _polygonIn._ringStart->_prev = ringTail->_prev;
-    ringTail->_prev->_next = _polygonIn._ringStart;
-    _polygonIn._numPoints--;
-    delete ringTail;
+    _polygonIn.removeVetex(ringTail);
   }
   // _polygonIn.checkLink();
   return;

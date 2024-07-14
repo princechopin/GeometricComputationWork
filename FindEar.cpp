@@ -139,9 +139,7 @@ void FindEar::getPolygon(const char *fileName)
   inFile.close();
   // remove the last point if identical to start.
   // _polygonIn.checkLink();
-  if (ringTail != _polygonIn._ringStart 
-    && ringTail->_pt._x == _polygonIn._ringStart->_pt._x 
-    && ringTail->_pt._y == _polygonIn._ringStart->_pt._y) {
+  if (ringTail != _polygonIn._ringStart && ringTail->_pt == _polygonIn._ringStart->_pt) {
     _polygonIn._ringStart->_prev = ringTail->_prev;
     ringTail->_prev->_next = _polygonIn._ringStart;
     _polygonIn._numPoints--;

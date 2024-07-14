@@ -72,7 +72,7 @@ struct dpolygon_t {
      vertex->_prev->_next = vertex->_next;
      vertex->_next->_prev = vertex->_prev;
      if (_ringStart == vertex) {
-        _ringStart = vertex->_prev;
+        _ringStart = (vertex->_prev == _ringStart)?nullptr : vertex->_prev;
      }
      delete vertex;
   }
@@ -166,7 +166,6 @@ int FindEar::run()
   double prevArea = _polygonIn.getArea(), currArea = prevArea;
   cout << "Org area:" << prevArea << "\n";
   int i (0);
-  bool tryToRemove(false);
   while (_polygonIn._numPoints > 3 && currArea > THRESHOLD) {
     cout << "numPoints " << _polygonIn._numPoints << "\n";
     prev = _polygonIn._ringStart->_prev;
@@ -186,21 +185,15 @@ int FindEar::run()
     _polygonIn.checkLink();
     printf("cutline : (%g %g)(%g %g )(%g %g)\n",
       prev->_pt._x, prev->_pt._y, curr->_pt._x, curr->_pt._y, next->_pt._x, next->_pt._y);
-    tryToRemove = false;
     if (_polygonIn.lineIsInside(prev->_pt, next->_pt)) {
-        _polygonIn._numPoints--;
-        tryToRemove = true;
-        prev->_next = next;
-        next->_prev = prev;
-        _polygonIn._ringStart = prev;
-        _polygonIn.checkLink();
         // Take this solution.
         _triangles.push_back(dtriangle_t(prev->_pt, curr->_pt, next->_pt));
         double tArea = _triangles.back().getArea();
         cout << "T Area : " << tArea << "  prevArea: " << prevArea << " currArea: " << currArea - tArea << "\n";
         cout << "Area Gain : " << tArea << "\n";
         prevArea = currArea = currArea - tArea;
-        delete curr;
+        _polygonIn.removeVetex(curr);
+        _polygonIn.checkLink();
     } else {
         _polygonIn._ringStart = next;
     }

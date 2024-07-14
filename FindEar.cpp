@@ -66,7 +66,16 @@ struct dpolygon_t {
   
   void checkLink();
   double getArea();
-  bool intersectLine(const dpoint_t &p1, const dpoint_t &p2);
+  void removeVetex(dpRing_t *vertex) {
+     _numPoints--;
+     dpRing_t *prev = vertex->_prev;
+     vertex->_prev->_next = vertex->_next;
+     vertex->_next->_prev = vertex->_prev;
+     if (_ringStart == vertex) {
+        _ringStart = vertex->_prev;
+     }
+     delete vertex;
+  }
   bool lineIsInside(const dpoint_t &p1, const dpoint_t &p2);
 
   int _numPoints;
@@ -170,19 +179,11 @@ int FindEar::run()
 
     if (prev->_pt == curr->_pt) {
         printf("i: %d Remove identical node: (%g %g)\n", i, curr->_pt._x, curr->_pt._y);
-        _polygonIn._numPoints--;
-        prev->_next = next;
-        next->_prev = prev;
-        delete curr;
-        _polygonIn._ringStart = prev;
+        _polygonIn.removeVetex(curr);
         continue;
     } else if (next->_pt == curr->_pt) {
         printf("i: %d Remove identical node: (%g %g)\n", i, curr->_pt._x, curr->_pt._y);
-        _polygonIn._numPoints--;
-        prev->_next = next;
-        next->_prev = prev;
-        delete curr;
-        _polygonIn._ringStart = prev;
+        _polygonIn.removeVetex(curr);
         continue;
     }
     _polygonIn.checkLink();

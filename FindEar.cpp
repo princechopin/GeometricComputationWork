@@ -162,12 +162,12 @@ int FindEar::run()
   cout << "Org area:" << prevArea << "\n";
   int i (0);
   bool tryToRemove(false);
-  while (_polygonIn._numPoints > 3 && currArea > 0.0) {
+  while (_polygonIn._numPoints > 3 && currArea > THRESHOLD) {
     cout << "numPoints " << _polygonIn._numPoints << "\n";
     prev = _polygonIn._ringStart->_prev;
     curr = _polygonIn._ringStart;
     next = _polygonIn._ringStart->_next;
-    _polygonIn.checkLink();
+    // _polygonIn.checkLink();
     printf("cutline : (%g %g)(%g %g )(%g %g)\n",
       prev->_pt._x, prev->_pt._y, curr->_pt._x, curr->_pt._y, next->_pt._x, next->_pt._y);
     tryToRemove = false;
@@ -177,29 +177,15 @@ int FindEar::run()
         prev->_next = next;
         next->_prev = prev;
         _polygonIn._ringStart = prev;
-        currArea =_polygonIn.getArea();
-        cout << "Current Area : " << currArea << "\n";
-        _polygonIn.checkLink();
-    }
-    double tArea = dtriangle_t(prev->_pt, curr->_pt, next->_pt).getArea();
-    cout << "T Area : " << tArea << "  prevArea: " << prevArea << " currArea: " << currArea << "\n";
-    if ((prevArea >= currArea) && (fabs(tArea - (prevArea - currArea )) < THRESHOLD)) {
+        // _polygonIn.checkLink();
         // Take this solution.
-        cout << "Area Gain : " << prevArea - currArea << "\n";
-        prevArea = currArea;
         _triangles.push_back(dtriangle_t(prev->_pt, curr->_pt, next->_pt));
+        double tArea = _triangles.back().getArea();
+        cout << "T Area : " << tArea << "  prevArea: " << prevArea << " currArea: " << currArea - tArea << "\n";
+        cout << "Area Gain : " << tArea << "\n";
+        prevArea = currArea = currArea - tArea;
         delete curr;
-    } else if (tryToRemove) {
-        // restore previous solution
-        currArea = prevArea;
-        _polygonIn._numPoints++;
-        prev->_next = curr;
-        next->_prev = curr;
-        // try next point
-        _polygonIn._ringStart = next;
-        cout << "Backtrack Area : " << currArea << "\n";
     } else {
-
         _polygonIn._ringStart = next;
     }
     i++;
@@ -207,9 +193,13 @@ int FindEar::run()
     // Set a limit to avoid possible infinite loop caused by bad data or bad services.
     if (i > limit*30 || currArea == 0.0) break;
   }
+  cout << "numPoints: " << _polygonIn._numPoints << "  currArea : " << currArea  << "\n";
   if (_polygonIn._numPoints == 3) {
+     cout << "Add last rectangle\n";
      dpRing_t *curr = _polygonIn._ringStart;
      _triangles.push_back(dtriangle_t(curr->_prev->_pt, curr->_pt, curr->_next->_pt));
+     double tArea = _triangles.back().getArea();
+     cout << "T Area : " << tArea << "  prevArea: " << prevArea << " currArea: " << currArea - tArea << "\n";
   }
 
   for (dtriangle_t &t:_triangles) {
@@ -238,7 +228,6 @@ bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
   // boost geometry utility covered_by has bugs that it does not work properly for polygon covered_by polygon.
   
   bg::model::polygon<bgPoint_t> poly1;
-  // bg::model::polygon<bgPoint_t> poly2;
   bgPoint_t bgPt;
 
   stringstream stream1;
@@ -259,25 +248,12 @@ bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
   for (int i(0); i <= step; i++, x += dx, y += dy) {
     stringstream stream2;
     stream2 << "POINT(" << x << " " << y << ")";
-    cout << stream2.str() << "\n";
+    // cout << stream2.str() << "\n";
     bg::read_wkt(stream2.str(), bgPt);
-    cout << bg::wkt(bgPt) << "\n";
+    // cout << bg::wkt(bgPt) << "\n";
     if (!bg::covered_by(bgPt, poly1)) return false;
   }
   return true;
-
-  cout << "Check covered_by\n";
-
-  cout << "Check covered_by\n";
-
-
-  cout << stream1.str() << "\n";
-  cout << bg::wkt(poly1) << "\n";
-  cout << bg::covered_by(bgPt, poly1) << " p2p1\n";
-  // cout << bg::covered_by(poly1, bgPt) << " p1p2\n";
-  // cout << bg::covered_by(bgPt, bgPt) << " p2p2\n";
-  cout << bg::covered_by(poly1, poly1) << " p1p1\n";
-  return bg::covered_by(bgPt, poly1);
 #endif
 }
 

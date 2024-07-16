@@ -52,6 +52,7 @@ code, which can be used to do some unit tests for the modules.
 main class is FindEar, getPolygon() can build the doubly-llinked ring from any give .csv file.
 The main routine is in run().
 
+test.sh is the bash unit test for FindEar, it will verify that FindEar will get correct area output.
 
 I am eagerly waiting to talk to the teams for the next steps.
 

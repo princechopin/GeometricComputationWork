@@ -6,7 +6,7 @@
  *  convered by Polygon, but boost::geometry::cover_by does not support segement,
  *  and it does not work correctly on polygon cover polygons, so, I wrote a more 
  *  exhausted code leveraging covered_by(point, polygon) using segment decomposition.
- *  It works well for the give testcases, which are actually quite comlicated.
+ *  It works well for the give testcases, which are actually quite complicated.
  *  Code prepared by Joe Wang. July 12, 2024
  */
 #include <stdio.h>

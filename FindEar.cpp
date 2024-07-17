@@ -78,6 +78,7 @@ struct dpolygon_t {
      delete vertex;
   }
   bool lineIsInside(const dpoint_t &p1, const dpoint_t &p2);
+  bool lineIsInsideOld(const dpoint_t &p1, const dpoint_t &p2);
   static bool lineIntersect(const dpoint_t &p1, const dpoint_t &p2, const dpoint_t &p3, const dpoint_t &p4);
 
   int _numPoints;
@@ -187,7 +188,9 @@ int FindEar::run()
     _polygonIn.checkLink();
     printf("cutline : (%g %g)(%g %g )(%g %g)\n",
       prev->_pt._x, prev->_pt._y, curr->_pt._x, curr->_pt._y, next->_pt._x, next->_pt._y);
+
     if (_polygonIn.lineIsInside(prev->_pt, next->_pt)) {
+        
         // Take this solution.
         _triangles.push_back(dtriangle_t(prev->_pt, curr->_pt, next->_pt));
         double tArea = _triangles.back().getArea();
@@ -269,14 +272,15 @@ bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
 }
 
 bool dpolygon_t::lineIntersect(const dpoint_t &p1, dpoint_t const &p2, const dpoint_t &p3, const dpoint_t &p4) {
+    printf("pline: %g %g %g %g\n", p3._x, p3._y, p4._x, p4._y);
     if (p1 == p3 || p1 == p4 || p2 == p3 || p2 == p4)
         return false;
 
     double
-    p1_p2_x = p1.distX(p2),
-    p1_p2_y = p1.distY(p2),
-    p3_p4_x = p3.distX(p4),
-    p3_p4_y = p3.distY(p4),
+    p1_p2_x = p2.distX(p1),
+    p1_p2_y = p2.distY(p1),
+    p3_p4_x = p4.distX(p3),
+    p3_p4_y = p4.distY(p3),
     p1xp2y = p1._x*p2._y,
     p1yp2x = p1._y*p2._x,
     p3xp4y = p3._x*p4._y,
@@ -291,12 +295,48 @@ bool dpolygon_t::lineIntersect(const dpoint_t &p1, dpoint_t const &p2, const dpo
         double Px = ((p1xp2y - p1yp2x)*(p3_p4_x) - (p1_p2_x)*(p3xp4y - p3yp4x))/divideBy,
         Py = ((p1xp2y - p1yp2x)*(p3_p4_y) - (p1_p2_y)*(p3xp4y - p3yp4x))/divideBy;
         if (Px > fmin(p3._x, p4._x) && Px < fmax(p3._x, p4._x)
-            && (Py > fmin(p3._y, p4._y) && Py < fmax(p3._y, p4._y))) {
+            && Py > fmin(p3._y, p4._y) && Py < fmax(p3._y, p4._y)
+            && Px > fmin(p1._x, p2._x) && Px < fmax(p1._x, p2._x)
+            && Py > fmin(p1._y, p2._y) && Py < fmax(p1._y, p2._y)) {
                 return true;
             }
     }
 
     return false;
+}
+
+bool dpolygon_t::lineIsInsideOld(const dpoint_t &p1, const dpoint_t &p2) {
+#if 1
+  // boost geometry utility covered_by has bugs that it does not work properly for polygon covered_by polygon.
+
+  bg::model::polygon<bgPoint_t> poly1;
+  bgPoint_t bgPt;
+
+  stringstream stream1;
+  stream1  << "POLYGON((";
+
+  dpRing_t *ringScan = _ringStart;
+  do {
+    stream1 << ringScan->_pt._x << " " << ringScan->_pt._y << ",";
+    ringScan = ringScan->_next;
+  } while (ringScan != _ringStart);
+  stream1 << ringScan->_pt._x << " " << ringScan->_pt._y << "))";
+  bg::read_wkt(stream1.str(), poly1);
+
+  // A slow check by all points on the line, pretty sure this can be improved.
+  int step = int(fabs(fmax(p2.distX(p1),  p2.distY(p1)))/0.2);
+  double dx = (p2._x - p1._x)/step, dy = (p2._y - p1._y)/step;
+  double x(p1._x), y(p1._y);
+  for (int i(0); i <= step; i++, x += dx, y += dy) {
+    stringstream stream2;
+    stream2 << "POINT(" << x << " " << y << ")";
+    // cout << stream2.str() << "\n";
+    bg::read_wkt(stream2.str(), bgPt);
+    // cout << bg::wkt(bgPt) << "\n";
+    if (!bg::covered_by(bgPt, poly1)) return false;
+  }
+  return true;
+#endif
 }
 
 /*********************************************************************************************
@@ -316,6 +356,7 @@ double dtriangle_t::getArea()
   bg::read_wkt(streamt.str(), polyt);
   return fabs(bg::area(polyt));
 }
+
 
 double dpolygon_t::getArea()
 {

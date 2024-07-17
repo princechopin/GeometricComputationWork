@@ -17,20 +17,14 @@ Backward:
 [0.5,0.5],
 [0,1],
 cutline : (1 0)(0 0 )(0 1)
-POINT(1 0)
-POINT(1 0)
-POINT(0.8 0.2)
-POINT(0.8 0.2)
-POINT(0.6 0.4)
-POINT(0.6 0.4)
-POINT(0.4 0.6)
-POINT(0.4 0.6)
-POINT(0.2 0.8)
-POINT(0.2 0.8)
-POINT(5.55112e-17 1)
-POINT(5.55112e-17 1)
-POLYGON((1 0,0 1,0.5 0.5,1 1,0.8 0.8,1 0))
-Current Area : 0.15
+pline: 0 1 0.5 0.5
+pline: 0.5 0.5 1 1
+pline: 1 1 0.8 0.8
+pline: 0.8 0.8 1 0
+pline: 1 0 0 0
+pline: 0 0 0 1
+T Area : 0.5  prevArea: 0.65 currArea: 0.15
+Area Gain : 0.5
 Forward:
 [1,0],
 [0,1],
@@ -43,8 +37,6 @@ Backward:
 [1,1],
 [0.5,0.5],
 [0,1],
-T Area : 0.5  prevArea: 0.65 currArea: 0.15
-Area Gain : 0.5
 i: 1  currArea : 0.15
 numPoints 5
 Forward:
@@ -60,11 +52,6 @@ Backward:
 [0.5,0.5],
 [0,1],
 cutline : (0.8 0.8)(1 0 )(0 1)
-POINT(0.8 0.8)
-POINT(0.8 0.8)
-POINT(0.6 0.85)
-POINT(0.6 0.85)
-T Area : 0.3  prevArea: 0.15 currArea: 0.15
 i: 2  currArea : 0.15
 numPoints 5
 Forward:
@@ -80,14 +67,13 @@ Backward:
 [1,1],
 [0.5,0.5],
 cutline : (1 0)(0 1 )(0.5 0.5)
-POINT(1 0)
-POINT(1 0)
-POINT(0.75 0.25)
-POINT(0.75 0.25)
-POINT(0.5 0.5)
-POINT(0.5 0.5)
-POLYGON((1 0,0.5 0.5,1 1,0.8 0.8,1 0))
-Current Area : 0.15
+pline: 0.5 0.5 1 1
+pline: 1 1 0.8 0.8
+pline: 0.8 0.8 1 0
+pline: 1 0 0 1
+pline: 0 1 0.5 0.5
+T Area : 0  prevArea: 0.15 currArea: 0.15
+Area Gain : 0
 Forward:
 [1,0],
 [0.5,0.5],
@@ -98,8 +84,6 @@ Backward:
 [0.8,0.8],
 [1,1],
 [0.5,0.5],
-T Area : 0  prevArea: 0.15 currArea: 0.15
-Area Gain : 0
 i: 3  currArea : 0.15
 numPoints 4
 Forward:
@@ -113,12 +97,12 @@ Backward:
 [1,1],
 [0.5,0.5],
 cutline : (0.8 0.8)(1 0 )(0.5 0.5)
-POINT(0.8 0.8)
-POINT(0.8 0.8)
-POINT(0.5 0.5)
-POINT(0.5 0.5)
-POLYGON((0.8 0.8,0.5 0.5,1 1,0.8 0.8))
-Current Area : 0
+pline: 0.5 0.5 1 1
+pline: 1 1 0.8 0.8
+pline: 0.8 0.8 1 0
+pline: 1 0 0.5 0.5
+T Area : 0.15  prevArea: 0.15 currArea: -2.77556e-17
+Area Gain : 0.15
 Forward:
 [0.8,0.8],
 [0.5,0.5],
@@ -127,9 +111,10 @@ Backward:
 [0.8,0.8],
 [1,1],
 [0.5,0.5],
-T Area : 0.15  prevArea: 0.15 currArea: 0
-Area Gain : 0.15
-i: 4  currArea : 0
+i: 4  currArea : -2.77556e-17
+numPoints: 3  currArea : -2.77556e-17
+Add last rectangle
+T Area : 0  prevArea: -2.77556e-17 currArea: -2.77556e-17
 [1,0],[0,0],[0,1],
 [1,0],[0,1],[0.5,0.5],
 [0.8,0.8],[1,0],[0.5,0.5],

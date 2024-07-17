@@ -5,7 +5,7 @@ check_result () {
   then
      echo "Test $1 passed with result $3"
   else
-     echo "Test $1 failed with result $3(golden $3)"
+     echo "Test $1 failed with result $result(golden $3)"
   fi
 }
 

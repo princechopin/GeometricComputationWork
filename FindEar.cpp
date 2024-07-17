@@ -6,7 +6,7 @@
  *  convered by Polygon, but boost::geometry::cover_by does not support segement,
  *  and it does not work correctly on polygon cover polygons, so, I wrote a more 
  *  exhausted code leveraging covered_by(point, polygon) using segment decomposition.
- *  It works well for the give testcases, which are actually quite complicated.
+ *  It works well for the give testcases, which are actually quite comlicated.
  *  Code prepared by Joe Wang. July 12, 2024
  */
 #include <stdio.h>
@@ -78,6 +78,7 @@ struct dpolygon_t {
      delete vertex;
   }
   bool lineIsInside(const dpoint_t &p1, const dpoint_t &p2);
+  bool lineIntersect(dpoint_t &p1, dpoint_t &p2, dpoint_t &p3, dpoint_t &p4);
 
   int _numPoints;
   dpRing_t *_ringStart;
@@ -231,10 +232,10 @@ typedef bg::model::multi_point<point_t> bgMpoint_t;
 bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
 {
   // After experimenting, I found that the cover_by utility provided by Boost does not work.
-  // So, I will count areas instead to make this program work.
-
 #if 1 
   // boost geometry utility covered_by has bugs that it does not work properly for polygon covered_by polygon.
+  // First check if the middle point is inside polygon and then check if there are intersections 
+  // between line and each line on the polygon to make this run faster.
   
   bg::model::polygon<bgPoint_t> poly1;
   bgPoint_t bgPt;
@@ -250,20 +251,52 @@ bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
   stream1 << ringScan->_pt._x << " " << ringScan->_pt._y << "))";
   bg::read_wkt(stream1.str(), poly1);
 
-  // A slow check by all points on the line, pretty sure this can be improved.
-  int step = int(fabs(fmax(p2.distX(p1),  p2.distY(p1)))/0.2);
-  double dx = (p2._x - p1._x)/step, dy = (p2._y - p1._y)/step;
-  double x(p1._x), y(p1._y);
-  for (int i(0); i <= step; i++, x += dx, y += dy) {
-    stringstream stream2;
-    stream2 << "POINT(" << x << " " << y << ")";
-    // cout << stream2.str() << "\n";
-    bg::read_wkt(stream2.str(), bgPt);
-    // cout << bg::wkt(bgPt) << "\n";
-    if (!bg::covered_by(bgPt, poly1)) return false;
-  }
+  dpoint_t midPt((p1._x+p2._x)/2.0, (p1._y+p2._y)/2);
+  stringstream stream2;
+  stream2 << "POINT(" << midPt._x << " " << midPt._y << ")";
+  bg::read_wkt(stream2.str(), bgPt);
+  if (!bg::covered_by(bgPt, poly1)) return false;
+
+  do {
+    ringScan = ringScan->_next;
+    dpoint_t p3 = ringScan->_pt, p4 = ringScan->_next->_pt;
+    if (lineIntersect(p1, p2, p3, p4)) {
+        return false;
+    }
+  } while (ringScan != _ringStart);
   return true;
 #endif
+}
+
+bool lineIntersect(const dpoint_t &p1, dpoint_t const &p2, const dpoint_t &p3, const dpoint_t &p4) {
+    if (p1 == p3 || p1 == p4 || p2 == p3 || p2 == p4)
+        return false;
+
+    double
+    p1_p2_x = p1.distX(p2),
+    p1_p2_y = p1.distY(p2),
+    p3_p4_x = p3.distX(p4),
+    p3_p4_y = p3.distY(p4),
+    p1xp2y = p1._x*p2._y,
+    p1yp2x = p1._y*p2._x,
+    p3xp4y = p3._x*p4._y,
+    p3yp4x = p3._y*p4._x,
+    p1xp2y_p1yp2x = p1xp2y - p1yp2x,
+    p3xp4y_p3yp4x = p3xp4y - p3yp4x,
+    divideBy = (p1_p2_x * p3_p4_y) - (p1_p2_y * p3_p4_x);
+
+    if (divideBy == 0) {
+        return false;
+    } else {
+        double Px = ((p1xp2y - p1yp2x)*(p3_p4_x) - (p1_p2_x)*(p3xp4y - p3yp4x))/divideBy,
+        Py = ((p1xp2y - p1yp2x)*(p3_p4_y) - (p1_p2_y)*(p3xp4y - p3yp4x))/divideBy;
+        if (Px > fmin(p3._x, p4._x) && Px < fmax(p3._x, p4._x)
+            && (Py > fmin(p3._y, p4._y) && Py < fmax(p3._y, p4._y))) {
+                return true;
+            }
+    }
+
+    return false;
 }
 
 /*********************************************************************************************

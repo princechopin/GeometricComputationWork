@@ -35,7 +35,7 @@ struct dpoint_t {
   dpoint_t operator = (const dpoint_t &p) { _x = p._x; _y = p._y; return *this; }
   double distX(const dpoint_t &p) const { return p._x - this->_x; }
   double distY(const dpoint_t &p) const { return p._y - this->_y; }
-  bool operator == (const dpoint_t &p) { return(_x == p._x && _y == p._y); }
+  bool operator == (const dpoint_t &p) const { return(_x == p._x && _y == p._y); }
   double _x;
   double _y;
 };
@@ -78,7 +78,7 @@ struct dpolygon_t {
      delete vertex;
   }
   bool lineIsInside(const dpoint_t &p1, const dpoint_t &p2);
-  bool lineIntersect(dpoint_t &p1, dpoint_t &p2, dpoint_t &p3, dpoint_t &p4);
+  static bool lineIntersect(const dpoint_t &p1, const dpoint_t &p2, const dpoint_t &p3, const dpoint_t &p4);
 
   int _numPoints;
   dpRing_t *_ringStart;
@@ -268,7 +268,7 @@ bool dpolygon_t::lineIsInside(const dpoint_t &p1, const dpoint_t &p2)
 #endif
 }
 
-bool lineIntersect(const dpoint_t &p1, dpoint_t const &p2, const dpoint_t &p3, const dpoint_t &p4) {
+bool dpolygon_t::lineIntersect(const dpoint_t &p1, dpoint_t const &p2, const dpoint_t &p3, const dpoint_t &p4) {
     if (p1 == p3 || p1 == p4 || p2 == p3 || p2 == p4)
         return false;
 
